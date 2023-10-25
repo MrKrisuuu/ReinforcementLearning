@@ -15,7 +15,7 @@ class DQNAgent(nn.Module):
         self.dtype = torch.float
 
         self.layer_in = nn.Linear(dim_in, dims_inside[0], dtype=self.dtype)
-        self.layers_inside = [nn.Linear(dims_inside[i], dims_inside[i+1], dtype=self.dtype) for i in range(len(dims_inside)-1)]
+        self.layers_inside = [nn.Linear(dims_inside[i], dims_inside[i+1], dtype=self.dtype).to(device) for i in range(len(dims_inside)-1)]
         self.layer_out = nn.Linear(dims_inside[-1], dim_out, dtype=self.dtype)
         self.act = nn.ReLU()
 
@@ -32,7 +32,7 @@ class DQNAgent(nn.Module):
         self.memory = []
 
     def forward(self, x):
-        x = torch.tensor(x).to(device).type(self.dtype)
+        x = x
         x = self.act(self.layer_in(x))
         for layer in self.layers_inside:
             x = self.act(layer(x))
@@ -65,11 +65,10 @@ class DQNAgent(nn.Module):
             self.memory = []
 
     def get_action(self, state, best=True):
-        if not best and torch.rand(1).item() < self.e:
-            i = torch.randint(self.env.action_space.n, (1,))
-            return i.item()
+        if not best and np.random.rand(1) < self.e:
+            return np.random.randint(0, self.env.action_space.n)
         else:
-            actions = self.forward(state)
+            actions = self.forward(torch.tensor(state).to(device).type(self.dtype))
             return torch.argmax(actions).item()
 
     def end_game(self):

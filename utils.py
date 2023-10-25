@@ -39,7 +39,9 @@ def train_agent(agent, epochs=1000):
                 state, info = env.reset()
                 rewards.append(sum_reward)
                 if epoch%1000 == 0:
-                    print(f"Epoch {epoch}: {round(sum(rewards[-1000:]) / 1000, 2)}")
+                    end_time = time.time()
+                    elapsed_time = end_time - start_time
+                    print(f"Epoch {epoch}: {round(sum(rewards[-1000:]) / 1000, 2)}, {round(elapsed_time, 2)}")
                 agent.end_game()
                 break
     env.close()
@@ -57,7 +59,7 @@ def train_agent(agent, epochs=1000):
             file.write(str(round(reward, 2)) + '\n')
 
     elapsed_time = end_time - start_time
-    print(f"Elapsed time: {elapsed_time} seconds for {agent.get_name()}")
+    print(f"Elapsed time: {round(elapsed_time, 2)} seconds for {agent.get_name()}")
     return 1
 
 
@@ -137,7 +139,7 @@ def plot_rewards(rewards, length, pass_reward=200, xlabel="Reward", title="Lunar
 
 def plot_diff(differs, labels, ylabel="Reward", title="Lunar Lander"):
     for diff, label in zip(differs, labels):
-        plt.plot(list(range(len(differs[0]))), diff, label=label)
+        plt.plot(list(range(len(diff))), diff, label=label)
     plt.xlabel("Epoch")
     plt.ylabel(ylabel)
     plt.title(title)
