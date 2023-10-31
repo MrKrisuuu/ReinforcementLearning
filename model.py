@@ -30,6 +30,7 @@ class DQNAgent(nn.Module):
         self.name = name
 
         self.memory = []
+        # self.cache = None
 
     def forward(self, x):
         x = x
@@ -66,10 +67,20 @@ class DQNAgent(nn.Module):
 
     def get_action(self, state, best=True):
         if not best and np.random.rand(1) < self.e:
+            self.cache = None
             return np.random.randint(0, self.env.action_space.n)
         else:
             actions = self.forward(torch.tensor(state).to(device).type(self.dtype))
             return torch.argmax(actions).item()
+            # if best or not self.cache:
+            #     actions = self.forward(torch.tensor(state).to(device).type(self.dtype))
+            #     action = torch.argmax(actions).item()
+            #     self.cache = action
+            #     return action
+            # else:
+            #     action = self.cache
+            #     self.cache = None
+            #     return action
 
     def end_game(self):
         if self.d and self.e > 0.05:
@@ -78,11 +89,13 @@ class DQNAgent(nn.Module):
     def set_env(self, env):
         self.env = env
 
-    def save(self, name):
-        torch.save(self.state_dict(), f"lunar_lander_{self.get_name()}_{name}.pth")
+    def save(self, name="final"):
+        # nie działa?
+        torch.save(self.state_dict(), f"./models/lunar_lander_{self.get_name()}_{name}.pth")
 
-    def load(self, name):
-        self.load_state_dict(torch.load(f"lunar_lander_{self.get_name()}_{name}.pth"))
+    def load(self, name="final"):
+        # nie działa?
+        self.load_state_dict(torch.load(f"./models/lunar_lander_{self.get_name()}_{name}.pth"))
 
     def get_name(self):
         return f"DQN_{self.name}"
@@ -142,12 +155,12 @@ class QAgent():
     def set_env(self, env):
         self.env = env
 
-    def save(self, name):
-        with open(f"lunar_lander_{self.get_name()}_{name}.pkl", 'wb') as file:
+    def save(self, name="final"):
+        with open(f"./models/lunar_lander_{self.get_name()}_{name}.pkl", 'wb') as file:
             pickle.dump(self.Q_table, file)
 
-    def load(self, name):
-        with open(f"lunar_lander_{self.get_name()}_{name}.pkl", 'rb') as file:
+    def load(self, name="final"):
+        with open(f"./models/lunar_lander_{self.get_name()}_{name}.pkl", 'rb') as file:
             self.Q_table = pickle.load(file)
 
     def get_size(self):

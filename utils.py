@@ -1,4 +1,5 @@
 import gymnasium as gym
+from gymnasium.utils.save_video import save_video
 import matplotlib.pyplot as plt
 import time
 import math
@@ -7,7 +8,9 @@ from functools import reduce
 from model import DQNAgent, QAgent
 
 
-def train_agent(agent, epochs=1000):
+def train_agent(agent, epochs=100000):
+    if isinstance(agent, DQNAgent):
+        agent.train()
     # env = gym.make("MountainCar-v0")
     env = gym.make("LunarLander-v2")
 
@@ -47,14 +50,14 @@ def train_agent(agent, epochs=1000):
     env.close()
     end_time = time.time()
 
-    agent.save("final")
+    agent.save()
     if isinstance(agent, QAgent):
         sizes.append(agent.get_size())
-        with open(f"sizes_{agent.get_name()}.txt", 'w') as file:
+        with open(f"./sizes/sizes_{agent.get_name()}.txt", 'w') as file:
             for size in sizes:
                 file.write(str(size) + '\n')
 
-    with open(f"rewards_{agent.get_name()}.txt", 'w') as file:
+    with open(f"./rewards/rewards_{agent.get_name()}.txt", 'w') as file:
         for reward in rewards:
             file.write(str(round(reward, 2)) + '\n')
 
@@ -64,13 +67,18 @@ def train_agent(agent, epochs=1000):
 
 
 def test_agent(agent, epochs=10):
-    env = gym.make("LunarLander-v2", render_mode="human")
+    if isinstance(agent, DQNAgent):
+        agent.eval()
+    env = gym.make("LunarLander-v2", render_mode="rgb_array_list")
 
     agent.set_env(env)
     state, info = env.reset()
 
+    step_starting_index = 0
+    episode_index = 0
     for epoch in range(epochs):
         sum_reward = 0
+        step_index = 0
         while True:
             action = agent.get_action(state)
             next_state, reward, terminated, truncated, info = env.step(action)
@@ -78,9 +86,20 @@ def test_agent(agent, epochs=10):
 
             state = next_state
             if terminated or truncated:
+                # sometimes works, still worth it
+                save_video(
+                    env.render(),
+                    "videos",
+                    fps=env.metadata["render_fps"],
+                    step_starting_index=step_starting_index,
+                    episode_index=episode_index,
+                    name_prefix=str(round(sum_reward, 2))
+                )
+                step_starting_index = step_index + 1
+                episode_index += 1
                 state, info = env.reset()
-                print(f"Epoch {epoch}: {round(sum_reward, 2)}")
                 break
+            step_index += 1
     env.close()
 
 
@@ -145,4 +164,5 @@ def plot_diff(differs, labels, ylabel="Reward", title="Lunar Lander"):
     plt.title(title)
     plt.legend()
     plt.grid(True)
+    plt.savefig(f"./results/{title.replace('.', '')}")
     plt.show()
