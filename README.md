@@ -1,3 +1,5 @@
+![154 95-no-modifications](https://github.com/MrKrisuuu/ReinforcementLearning/assets/92759002/ae0f0623-ead5-4c45-82b6-a70587ddd77c)
+
 A program that solves the Lunar Landing problem with the Gym API. I compare Deep Q-Learning and Q-Learning and see which one performs better after selecting the appropriate parameters for this problem.
 
 Parameters tested:
